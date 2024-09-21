@@ -1,0 +1,633 @@
+:root {
+    --padding-left: max(env(safe-area-inset-left),8px);
+    --padding-right: max(env(safe-area-inset-right),8px);
+    --padding-top: max(env(safe-area-inset-top),8px);
+    --padding-bottom: max(env(safe-area-inset-bottom),8px);
+}
+html, body {
+    font-family: 'Arial';
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    touch-action: none;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+.maplibregl-ctrl-attrib {
+    display: none !important;
+}
+
+#loadingIndicator {
+    position: absolute;
+    top: 28px;
+    left: 125px;
+    color: white;
+    z-index: 1000;
+    display: none !important;
+}
+
+input[type='text']{
+    font-size: 1rem;
+    padding-left: 12px;
+    padding-right: 12px;
+    min-height: 2.5rem;
+    max-height: 2.5rem;
+    width: 72px;
+    border-radius: 12px;
+    color: white;
+    background-color: #252525;
+    border: 1px solid #FFFFFF22;
+    height: 46px;
+}
+
+input[type='date']{
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #252525;
+    color: white;
+    border: 1px solid #FFFFFF22;
+    border-radius: 12px;
+    height: 46px;
+    min-height: 46px;
+    max-height: 46px;
+    padding: 0 12px 0 12px;
+    box-sizing: border-box !important;
+    -webkit-box-sizing: border-box !important;
+    -moz-box-sizing: border-box !important;
+    font-size: 1rem;
+}
+
+.flatpickr-calendar {
+    left: 16px !important;
+    background-color: #252525;
+    border: 1px solid #FFFFFF22;
+    border-radius: 12px;
+    color: white;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+}
+
+.flatpickr-calendar::before, .flatpickr-calendar::after {
+    border: none;
+}
+
+span.flatpickr-weekday {
+    color: white;
+}
+
+.flatpickr-day {
+    color: white;
+    border: none;
+}
+
+.flatpickr-day:hover {
+    background-color: #FFFFFF22;
+    border: none;
+}
+
+.flatpickr-day.selected {
+    background-color: #0086F8;
+    border: none;
+}
+
+.flatpickr-day.nextMonthDay, .flatpickr-day.prevMonthDay {
+    color: #777;
+    border: none;
+}
+
+.flatpickr-day.nextMonthDay:hover, .flatpickr-day.prevMonthDay:hover {
+    background-color: #FFFFFF22;
+    border: none;
+}
+
+.flatpickr-months .flatpickr-next-month, .flatpickr-months .flatpickr-prev-month{
+    color: white;
+    fill: white;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover, .flatpickr-months .flatpickr-next-month:hover {
+    color:#0086F8;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg {
+    fill: #0086F8;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months{
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #252525;
+    color: white;
+    border: none;
+}
+
+.flatpickr-current-month input.cur-year{
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #252525;
+    color: white;
+    border: none;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp::after{
+    border-bottom-color: #FFFFFF;;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown::after{
+    border-top-color: #FFFFFF;
+}
+
+.maplibregl-ctrl-geocoder {
+    width: min(calc(100vw - var(--padding-left) - var(--padding-right)), 450px);
+    transition: width .25s cubic-bezier(.15,.85,.5,1);
+}
+
+
+.maplibregl-ctrl-geocoder form{
+    background-color: #252525 !important;
+    border: 1px solid #FFFFFF22 !important;
+    border-radius: 12px !important;
+    color: white !important;
+    height: 46px !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.maplibregl-ctrl-geocoder form ul{
+    background-color: #252525 !important;
+    border: 1px solid #FFFFFF22 !important;
+    border-radius: 12px !important;
+    color: white !important;
+}
+
+.maplibregl-ctrl-geocoder form ul li{
+    background-color: #252525 !important;
+    color: white !important;
+    cursor: pointer !important;
+}
+
+.maplibregl-ctrl-geocoder form ul li img{
+    filter: brightness(0) invert(1);
+}
+
+.maplibregl-ctrl-geocoder form ul li.selected{
+    background-color: #252525 !important;
+    color: white !important;
+    animation: none !important;
+}
+
+.maplibregl-ctrl-geocoder form .input-group{
+    height: 100% !important;
+    border-radius: 12px !important;
+}
+
+.maplibregl-ctrl-geocoder form .input-group input{
+    color: white !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+}
+
+.maplibregl-ctrl-geocoder form .input-group button.search-button svg{
+    stroke: white !important;
+}
+
+.maplibregl-ctrl-geocoder form .input-group button[title="clear"] svg{
+    fill: white !important;
+}
+
+/* Collapsed geocoder*/
+
+.maplibregl-ctrl-geocoder.collapsed {
+    width: 48px; /* 2px extra for the border */
+    cursor: pointer !important;
+}
+
+.maplibregl-ctrl-geocoder.collapsed form .input-group input{
+    width: 0px !important;
+    max-width: 0px !important;
+}
+
+.maplibregl-ctrl-geocoder form .input-group button{
+    cursor: pointer !important;
+    transform: translateX(0px);
+    transition: transform .125s;
+}
+
+.maplibregl-ctrl-geocoder.collapsed form .input-group button{
+    transform: translateX(8px);
+    width: 100% !important;
+}
+
+
+
+.maplibregl-ctrl-group:not(:empty) {
+    box-shadow: none;
+}
+
+
+.maplibregl-control-container div .maplibregl-ctrl:not(:first-child):not(.flatpickr-mobile) {
+    margin-top: .5rem !important;
+}        
+
+.maplibregl-ctrl-top-right {
+    position: absolute;
+    top: var(--padding-top);
+    right: var(--padding-right);
+}
+
+.maplibregl-ctrl-top-left {
+    position: absolute;
+    top: var(--padding-top);
+    left: var(--padding-left);
+}
+
+.maplibregl-ctrl-bottom-right {
+    position: absolute;
+    bottom: var(--padding-bottom);
+    right: var(--padding-right);
+}
+
+.maplibregl-ctrl-bottom-left {
+    position: absolute;
+    bottom: var(--padding-bottom);
+    left: var(--padding-left);
+}
+
+.maplibregl-ctrl {
+    margin: 0 !important;
+}
+
+.maplibregl-ctrl-group {
+    padding: 0;
+    border-radius: 12px;
+    background: #252525;
+    color: white;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid #FFFFFF22;
+}
+
+.maplibregl-ctrl-group button {
+    height: 46px;
+    width: 46px;
+}
+
+.maplibregl-ctrl-group button+button {
+    border-top: 1px solid #EEEEEE33;
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13z'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='m10.5 14 4-8 4 8z'/%3E%3Cpath fill='%23888888' d='m10.5 16 4 8 4-8z'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z' fill='none' stroke='%23FFFFFF' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-waiting .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z' fill='%23FFFFFF' fill-opacity='0.5' stroke='%23FFFFFF' stroke-width='2'/%3E%3C/svg%3E");
+    animation: none;
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background .maplibregl-ctrl-icon{
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-terrain .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF66' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E");
+}
+
+.maplibregl-ctrl button.maplibregl-ctrl-terrain-enabled .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E");
+}
+
+.maplibregl-user-location-dot, .maplibregl-user-location-dot:before{
+    background-color: #0086F8;
+}
+
+.maplibregl-user-location-accuracy-circle {
+    background-color: #0086F833;
+}
+
+#layerPanel {
+
+    /* Global styles */
+    background-color: #252525;
+    border-radius: 12px;
+    color: white;
+    padding: 12px;
+    border: 1px solid #FFFFFF22;
+    font-size: 1rem;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    cursor: default;
+    overflow: auto;
+    position: absolute;
+    z-index: 2;
+    box-sizing: border-box;
+
+    /* Desktop styles */
+    width: 280px;
+    top: var(--padding-top);
+    right: calc(8px + var(--padding-right) + 48px);
+    max-height: calc(100vh - var(--padding-top) - var(--padding-bottom) - 32px);
+
+    /* Hide by default */
+    transform: scale(.95);
+    opacity: 0;
+    transition: transform .25s cubic-bezier(.09, .5, .5, 1.4), opacity .25s ease;
+    pointer-events: none;
+}
+
+#layerPanel.visible {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: all;
+}
+
+#layerPanel h1 {
+    font-size: 1.5rem;
+    margin: .5em 0 1em 4px;
+}
+
+#layerPanel h2 {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #888;
+    margin: 0;
+    text-transform: uppercase;
+    padding-left: 12px;
+    /* temp */
+    margin-top: 1em;
+    margin-bottom: .125em;
+}
+
+#layerPanel ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: #333;
+    border-radius: 8px;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+}
+
+#layerPanel ul li {
+    display: flex;
+    align-items: stretch;
+    padding: 8px 12px;
+    align-items: center;
+}
+
+/* Add dividers between list items */
+#layerPanel ul li:not(:last-child) {
+    border-bottom: 1px solid #444;
+}
+
+.option-label {
+    flex-grow: 1;
+}
+
+/* Style the marker popups */
+
+.maplibregl-popup-content {
+    color: white;
+    background-color: #252525;
+    border: 1px solid #FFFFFF22;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 1rem;
+}
+
+.maplibregl-popup-content h1{
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.maplibregl-popup-tip {
+    opacity: 0;
+    border: 20px solid transparent;
+}
+
+.maplibregl-popup-close-button {
+    color: white;
+    padding: 0;
+    font-size: 1rem;
+    right: 16px;
+    top: 12px;
+}
+
+#inspector{
+    position: absolute;
+    background-color: #00000077;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    color: white;
+    padding: 8px;
+    border-radius: 12px;
+    font-size: .8rem;
+    pointer-events: none;
+    line-height: 1.2rem;
+}
+
+.buttonMapStyle {
+    flex-grow: 1;
+    aspect-ratio: 1.75;
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    border: 2px solid #555;
+    box-sizing: border-box;
+    transition: all .25s;
+    font-size: 1.1em;
+    text-shadow: 0 0 .25em #000000aa;
+}
+
+.basemapStreets {
+    background-image: url(assets/thumbnail-streets.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.basemapSatellite {
+    background-image: url(assets/thumbnail-satellite.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.buttonMapStyle.active {
+    border: 2px solid #0086F8;
+}
+
+.basemapOptions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+/* TOGGLE SWITCH STUFFFFFFFFFFFF */
+.toggle-switch {
+    height: 1.8rem;
+    --track-base-color: #555;
+    --track-active-color: #34c759;
+    --handle-color: #FFF;
+    --handle-shadow-color: rgba(0, 0, 0, 0.24);
+    aspect-ratio: 1.75;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Underlying checkbox element (hidden) */
+.toggle-switch input {
+    display: none;
+}
+
+/* Overall background/container */
+.toggle-switch i {
+    position: relative;
+    display: inline-block;
+    margin-right: 0;
+    aspect-ratio: 1.75;
+    height: 100%;
+    background-color: var(--track-base-color);
+    border-radius: 999px;
+    vertical-align: text-bottom;
+    transition: all .4s ease;
+}
+
+/* Slider track when OFF */
+.toggle-switch i::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 89.5%;
+    height: 85%;
+    background-color: var(--track-base-color);
+    opacity: 1;
+    border-radius: 999px;
+    transform: translate3d(7.5%, 7.5%, 0) scale3d(1, 1, 1);
+    transition: all .4s ease-out;
+}
+
+/* Slider handle */
+.toggle-switch i::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    height: 87%;
+    width: 49.75%;
+    background-color: var(--handle-color);
+    border-radius: 999px;
+    box-shadow: 0 1.5px 1.5px var(--handle-shadow-color);
+    transform: translate3d(7.5%, 7.5%, 0);
+    transform-style: preserve-3d;
+    transition: all 0.4s cubic-bezier(.09, .5, 0, 1.2);
+}
+
+/* Slider handle when pressing */
+.toggle-switch:active i::after {
+    width: 60%;
+    transform: translate3d(7.5%, 7.5%, 0);
+    transition: all 0.2s ease;
+}
+
+/* Slider handle when ON AND pressing */
+.toggle-switch:active input:checked+i::after {
+    transform: translate3d(60%, 7.5%, 0);
+}
+
+/* Overall background/container when ON */
+.toggle-switch input:checked+i {
+    background-color: var(--track-active-color);
+}
+
+/* Slider track when ON */
+.toggle-switch input:checked+i::before {
+    opacity: 1;
+    transform: translate3d(40%, 7.5%, 0) scale3d(0, 0, 0);
+}
+
+/* Slider handle when ON */
+.toggle-switch input:checked+i::after {
+    transform: translate3d(95%, 7.5%, 0);
+}
+
+/* Layer Panel Button */
+
+#btnLayerPanel button .maplibregl-ctrl-icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 19.8167 21.5682'%3E%0A%3Cg%3E%0A%20%20%3Crect%20height%3D%2221.5682%22%20opacity%3D%220%22%20width%3D%2219.8167%22%20x%3D%220%22%20y%3D%220%22/%3E%0A%20%20%3Cpath%20d%3D%22M18.5396%2014.456C19.1822%2014.8272%2019.4554%2015.131%2019.4554%2015.5856C19.4554%2016.044%2019.1822%2016.3479%2018.5396%2016.719L10.7515%2021.2283C10.3614%2021.4564%2010.0532%2021.5682%209.7292%2021.5682C9.39541%2021.5682%209.09697%2021.4564%208.70693%2021.2283L0.909083%2016.719C0.266407%2016.3479%200%2016.044%200%2015.5856C0%2015.131%200.266407%2014.8272%200.909083%2014.456L2.93501%2013.2844L4.16663%2013.9977L1.6583%2015.4372C1.59502%2015.4719%201.54756%2015.5163%201.54756%2015.5856C1.54756%2015.6587%201.59502%2015.7031%201.6583%2015.7378L9.34121%2020.147C9.48906%2020.2258%209.60459%2020.2686%209.7292%2020.2686C9.85078%2020.2686%209.96631%2020.2258%2010.1074%2020.147L17.7903%2015.7378C17.8604%2015.7031%2017.9078%2015.6587%2017.9078%2015.5856C17.9078%2015.5163%2017.8604%2015.4719%2017.7903%2015.4372L15.2841%2013.9989L16.5162%2013.2844Z%22%20fill%3D%22white%22/%3E%0A%20%20%3Cpath%20d%3D%22M4.39162%209.26414L1.6583%2010.8293C1.59502%2010.864%201.54756%2010.9084%201.54756%2010.9845C1.54756%2011.0575%201.59502%2011.0952%201.6583%2011.1366L9.34121%2015.5391C9.48906%2015.6179%209.60459%2015.6637%209.7292%2015.6637C9.85078%2015.6637%209.96631%2015.6179%2010.1074%2015.5391L17.7903%2011.1366C17.8604%2011.0952%2017.9078%2011.0575%2017.9078%2010.9845C17.9078%2010.9084%2017.8604%2010.864%2017.7903%2010.8293L15.0592%209.26539L16.2939%208.55L18.5396%209.85108C19.1822%2010.229%2019.4554%2010.523%2019.4554%2010.9845C19.4554%2011.4429%2019.1822%2011.7399%2018.5396%2012.1111L10.7515%2016.6272C10.3614%2016.8552%2010.0532%2016.97%209.7292%2016.97C9.39541%2016.97%209.09697%2016.8552%208.70693%2016.6272L0.909083%2012.1111C0.266407%2011.7399%200%2011.4429%200%2010.9845C0%2010.523%200.266407%2010.229%200.909083%209.85108L3.15751%208.55Z%22%20fill%3D%22white%22%20fill-opacity%3D%220.85%22/%3E%0A%20%20%3Cpath%20d%3D%22M9.7292%2012.1011C10.0532%2012.1011%2010.3614%2011.9862%2010.7515%2011.7612L18.5396%207.24893C19.1822%206.87774%2019.4554%206.57696%2019.4554%206.11553C19.4554%205.66084%2019.1822%205.36006%2018.5396%204.98887L10.7515%200.476565C10.3614%200.251565%2010.0532%200.136721%209.7292%200.136721C9.39541%200.136721%209.09697%200.251565%208.70693%200.476565L0.909083%204.98887C0.266407%205.36006%200%205.66084%200%206.11553C0%206.57696%200.266407%206.87774%200.909083%207.24893L8.70693%2011.7612C9.09697%2011.9862%209.39541%2012.1011%209.7292%2012.1011ZM9.7292%2010.8015C9.60459%2010.8015%209.48906%2010.7557%209.34121%2010.6769L1.6583%206.26768C1.59502%206.23604%201.54756%206.18858%201.54756%206.11553C1.54756%206.0462%201.59502%206.00176%201.6583%205.96709L9.34121%201.56094C9.48906%201.48213%209.60459%201.43633%209.7292%201.43633C9.85078%201.43633%209.96631%201.48213%2010.1074%201.56094L17.7903%205.96709C17.8604%206.00176%2017.9078%206.0462%2017.9078%206.11553C17.9078%206.18858%2017.8604%206.23604%2017.7903%206.26768L10.1074%2010.6769C9.96631%2010.7557%209.85078%2010.8015%209.7292%2010.8015Z%22%20fill%3D%22white%22/%3E%0A%20%3C/g%3E%0A%3C/svg%3E");
+}
+
+
+/* Mobile breakpoint for layer panel */
+@media (max-width: 500px) {
+    #layerPanel {
+        width: 100%;
+        max-width: 100vw;
+        max-height: 60%;
+        top: auto;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        box-shadow: none;
+        border-radius: 18px 18px 0 0;
+        border-bottom: none;
+        border-right: none;
+        border-left: none;
+        padding: 12px 12px 48px 12px;
+        
+
+        /* Hide by default */
+        transform: translateY(300px);
+        opacity: 0;
+        transition: transform .25s ease, opacity .25s ease;
+    }
+
+    #layerPanel.visible {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+        box-shadow: 0 0 64px #00000088;
+    }
+
+    .basemapOptions {
+        gap: 16px;
+    }
+}
