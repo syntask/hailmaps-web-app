@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>HailMaps.io</title>
+    <meta property="og:description" content="HailMaps.io - Intelligent storm tracking and analysis tools." />
+    <meta charset='utf-8'>
+    <meta name="viewport" content="initial-scale=1,width=device-width,viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="https://app.hailmaps.io/assets/icon-180.png">
+    <link rel="favicon" href="https://app.hailmaps.io/assets/icon-180.png">
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js'></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://unpkg.com/@maptiler/geocoding-control@latest/maplibregl.umd.js"></script>
+    <link href="https://unpkg.com/@maptiler/geocoding-control@latest/style.css" rel="stylesheet" />
+    <style>
+        :root {
+            --padding-left: max(env(safe-area-inset-left),8px);
+            --padding-right: max(env(safe-area-inset-right),8px);
+            --padding-top: max(env(safe-area-inset-top),8px);
+            --padding-bottom: max(env(safe-area-inset-bottom),8px);
+        }
+        html, body {
+            font-family: 'Arial';
+            background-color: black;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .maplibregl-ctrl-attrib {
+            display: none !important;
+        }
+
+        #loadingIndicator {
+            position: absolute;
+            top: 28px;
+            left: 125px;
+            color: white;
+            z-index: 1000;
+            display: none !important;
+        }
+
+        input[type='text']{
+            font-size: 1rem;
+            padding-left: 12px;
+            padding-right: 12px;
+            min-height: 2.5rem;
+            max-height: 2.5rem;
+            width: 72px;
+            border-radius: 12px;
+            color: white;
+            background-color: #252525;
+            border: 1px solid #FFFFFF22;
+            height: 46px;
+        }
+
+        input[type='date']{
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: #252525;
+            color: white;
+            border: 1px solid #FFFFFF22;
+            border-radius: 12px;
+            height: 46px;
+            min-height: 46px;
+            max-height: 46px;
+            padding: 0 12px 0 12px;
+            box-sizing: border-box !important;
+            -webkit-box-sizing: border-box !important;
+            -moz-box-sizing: border-box !important;
+            font-size: 1rem;
+        }
+
+        .flatpickr-calendar {
+            left: 16px !important;
+            background-color: #252525;
+            border: 1px solid #FFFFFF22;
+            border-radius: 12px;
+            color: white;
+            box-shadow: none;
+            -webkit-box-shadow: none;
+            -moz-box-shadow: none;
+        }
+
+        .flatpickr-calendar::before, .flatpickr-calendar::after {
+            border: none;
+        }
+
+        span.flatpickr-weekday {
+            color: white;
+        }
+
+        .flatpickr-day {
+            color: white;
+            border: none;
+        }
+
+        .flatpickr-day:hover {
+            background-color: #FFFFFF22;
+            border: none;
+        }
+
+        .flatpickr-day.selected {
+            background-color: #0086F8;
+            border: none;
+        }
+
+        .flatpickr-day.nextMonthDay, .flatpickr-day.prevMonthDay {
+            color: #777;
+            border: none;
+        }
+
+        .flatpickr-day.nextMonthDay:hover, .flatpickr-day.prevMonthDay:hover {
+            background-color: #FFFFFF22;
+            border: none;
+        }
+
+        .flatpickr-months .flatpickr-next-month, .flatpickr-months .flatpickr-prev-month{
+            color: white;
+            fill: white;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover, .flatpickr-months .flatpickr-next-month:hover {
+            color:#0086F8;
+        }
+
+        .flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg {
+            fill: #0086F8;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months{
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: #252525;
+            color: white;
+            border: none;
+        }
+
+        .flatpickr-current-month input.cur-year{
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: #252525;
+            color: white;
+            border: none;
+        }
+
+        .flatpickr-current-month .numInputWrapper span.arrowUp::after{
+            border-bottom-color: #FFFFFF;;
+        }
+
+        .flatpickr-current-month .numInputWrapper span.arrowDown::after{
+            border-top-color: #FFFFFF;
+        }
+
+        .maplibregl-ctrl-geocoder {
+            width: min(calc(100vw - var(--padding-left) - var(--padding-right)), 450px);
+            transition: width .25s cubic-bezier(.15,.85,.5,1);
+        }
+
+
+        .maplibregl-ctrl-geocoder form{
+            background-color: #252525 !important;
+            border: 1px solid #FFFFFF22 !important;
+            border-radius: 12px !important;
+            color: white !important;
+            height: 46px !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+
+        .maplibregl-ctrl-geocoder form ul{
+            background-color: #252525 !important;
+            border: 1px solid #FFFFFF22 !important;
+            border-radius: 12px !important;
+            color: white !important;
+        }
+
+        .maplibregl-ctrl-geocoder form ul li{
+            background-color: #252525 !important;
+            color: white !important;
+            cursor: pointer !important;
+        }
+
+        .maplibregl-ctrl-geocoder form ul li img{
+            filter: brightness(0) invert(1);
+        }
+
+        .maplibregl-ctrl-geocoder form ul li.selected{
+            background-color: #252525 !important;
+            color: white !important;
+            animation: none !important;
+        }
+
+        .maplibregl-ctrl-geocoder form .input-group{
+            height: 100% !important;
+            border-radius: 12px !important;
+        }
+
+        .maplibregl-ctrl-geocoder form .input-group input{
+            color: white !important;
+            font-size: 1rem !important;
+            width: 100% !important;
+        }
+
+        .maplibregl-ctrl-geocoder form .input-group button.search-button svg{
+            stroke: white !important;
+        }
+
+        .maplibregl-ctrl-geocoder form .input-group button[title="clear"] svg{
+            fill: white !important;
+        }
+
+        /* Collapsed geocoder*/
+
+        .maplibregl-ctrl-geocoder.collapsed {
+            width: 48px; /* 2px extra for the border */
+            cursor: pointer !important;
+        }
+
+        .maplibregl-ctrl-geocoder.collapsed form .input-group input{
+            width: 0px !important;
+            max-width: 0px !important;
+        }
+
+        .maplibregl-ctrl-geocoder form .input-group button{
+            cursor: pointer !important;
+            transform: translateX(0px);
+            transition: transform .125s;
+        }
+
+        .maplibregl-ctrl-geocoder.collapsed form .input-group button{
+            transform: translateX(8px);
+            width: 100% !important;
+        }
+
+
+
+        .maplibregl-ctrl-group:not(:empty) {
+            box-shadow: none;
+        }
+
+
+        .maplibregl-control-container div .maplibregl-ctrl:not(:first-child):not(.flatpickr-mobile) {
+            margin-top: .5rem !important;
+        }        
+
+        .maplibregl-ctrl-top-right {
+            position: absolute;
+            top: var(--padding-top);
+            right: var(--padding-right);
+        }
+
+        .maplibregl-ctrl-top-left {
+            position: absolute;
+            top: var(--padding-top);
+            left: var(--padding-left);
+        }
+
+        .maplibregl-ctrl-bottom-right {
+            position: absolute;
+            bottom: var(--padding-bottom);
+            right: var(--padding-right);
+        }
+
+        .maplibregl-ctrl-bottom-left {
+            position: absolute;
+            bottom: var(--padding-bottom);
+            left: var(--padding-left);
+        }
+
+        .maplibregl-ctrl {
+            margin: 0 !important;
+        }
+
+        .maplibregl-ctrl-group {
+            padding: 0;
+            border-radius: 12px;
+            background: #252525;
+            color: white;
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid #FFFFFF22;
+        }
+
+        .maplibregl-ctrl-group button {
+            height: 46px;
+            width: 46px;
+        }
+
+        .maplibregl-ctrl-group button+button {
+            border-top: 1px solid #EEEEEE33;
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13z'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 29 29'%3E%3Cpath d='m10.5 14 4-8 4 8z'/%3E%3Cpath fill='%23888888' d='m10.5 16 4 8 4-8z'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z' fill='none' stroke='%23FFFFFF' stroke-width='2'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-waiting .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z' fill='%23FFFFFF' fill-opacity='0.5' stroke='%23FFFFFF' stroke-width='2'/%3E%3C/svg%3E");
+            animation: none;
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background .maplibregl-ctrl-icon{
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 33 33'%3E%3Cpath d='M15.17301,17.82692L10.06701,15.75992C9.89101,15.69292,9.75301,15.58492,9.65201,15.43592C9.55101,15.28692,9.5,15.11792,9.5,14.92992C9.5,14.74092,9.55101,14.57492,9.65201,14.43292C9.75301,14.29092,9.89101,14.18592,10.06701,14.11892L22.34601,9.55992C22.52101,9.49192,22.68701,9.48192,22.84301,9.52892C22.99801,9.57692,23.12901,9.65392,23.23801,9.76292C23.34601,9.87092,23.42401,10.00192,23.47101,10.15692C23.51801,10.31292,23.50801,10.47892,23.44001,10.65392L18.88101,22.95392C18.80001,23.14192,18.68601,23.28092,18.53701,23.36892C18.38801,23.45592,18.23201,23.49992,18.07001,23.49992C17.90801,23.49992,17.75301,23.45292,17.60401,23.35792C17.45601,23.26292,17.34101,23.12792,17.26001,22.95392L15.17301,17.82692Z'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-terrain .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF66' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-ctrl button.maplibregl-ctrl-terrain-enabled .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='35' height='35' fill='%23FFFFFF' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E");
+        }
+
+        .maplibregl-user-location-dot, .maplibregl-user-location-dot:before{
+            background-color: #0086F8;
+        }
+
+        .maplibregl-user-location-accuracy-circle {
+            background-color: #0086F833;
+        }
+
+        #layerPanel {
+
+            /* Global styles */
+            background-color: #252525;
+            border-radius: 12px;
+            color: white;
+            padding: 12px;
+            border: 1px solid #FFFFFF22;
+            font-size: 1rem;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -o-user-select: none;
+            cursor: default;
+            overflow: auto;
+            position: absolute;
+            z-index: 2;
+            box-sizing: border-box;
+
+            /* Desktop styles */
+            width: 280px;
+            top: var(--padding-top);
+            right: calc(8px + var(--padding-right) + 48px);
+            max-height: calc(100vh - var(--padding-top) - var(--padding-bottom) - 32px);
+
+            /* Hide by default */
+            transform: scale(.95);
+            opacity: 0;
+            transition: transform .25s cubic-bezier(.09, .5, .5, 1.4), opacity .25s ease;
+            pointer-events: none;
+        }
+
+        #layerPanel.visible {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #layerPanel h1 {
+            font-size: 1.5rem;
+            margin: .5em 0 1em 4px;
+        }
+
+        #layerPanel h2 {
+            font-size: 1rem;
+            font-weight: normal;
+            color: #888;
+            margin: 0;
+            text-transform: uppercase;
+            padding-left: 12px;
+            /* temp */
+            margin-top: 1em;
+            margin-bottom: .125em;
+        }
+
+        #layerPanel ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background-color: #333;
+            border-radius: 8px;
+            margin-block-start: 0;
+            margin-block-end: 0;
+            margin-inline-start: 0;
+            margin-inline-end: 0;
+        }
+
+        #layerPanel ul li {
+            display: flex;
+            align-items: stretch;
+            padding: 8px 12px;
+            align-items: center;
+        }
+
+        /* Add dividers between list items */
+        #layerPanel ul li:not(:last-child) {
+            border-bottom: 1px solid #444;
+        }
+
+        .option-label {
+            flex-grow: 1;
+        }
+
+        /* Style the marker popups */
+        
+        .maplibregl-popup-content {
+            color: white;
+            background-color: #252525;
+            border: 1px solid #FFFFFF22;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 1rem;
+        }
+
+        .maplibregl-popup-content h1{
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .maplibregl-popup-tip {
+            opacity: 0;
+            border: 20px solid transparent;
+        }
+
+        .maplibregl-popup-close-button {
+            color: white;
+            padding: 0;
+            font-size: 1rem;
+            right: 16px;
+            top: 12px;
+        }
+
+        #inspector{
+            position: absolute;
+            background-color: #00000077;
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            color: white;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: .8rem;
+            pointer-events: none;
+            line-height: 1.2rem;
+        }
+
+        .buttonMapStyle {
+            flex-grow: 1;
+            aspect-ratio: 1.75;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            border: 2px solid #555;
+            box-sizing: border-box;
+            transition: all .25s;
+            font-size: 1.1em;
+            text-shadow: 0 0 .25em #000000aa;
+        }
+
+        .basemapStreets {
+            background-image: url(assets/thumbnail-streets.png);
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .basemapSatellite {
+            background-image: url(assets/thumbnail-satellite.png);
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .buttonMapStyle.active {
+            border: 2px solid #0086F8;
+        }
+
+        .basemapOptions {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+
+        /* TOGGLE SWITCH STUFFFFFFFFFFFF */
+        .toggle-switch {
+            height: 1.8rem;
+            --track-base-color: #555;
+            --track-active-color: #34c759;
+            --handle-color: #FFF;
+            --handle-shadow-color: rgba(0, 0, 0, 0.24);
+            aspect-ratio: 1.75;
+            display: inline-block;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+    
+        /* Underlying checkbox element (hidden) */
+        .toggle-switch input {
+            display: none;
+        }
+    
+        /* Overall background/container */
+        .toggle-switch i {
+            position: relative;
+            display: inline-block;
+            margin-right: 0;
+            aspect-ratio: 1.75;
+            height: 100%;
+            background-color: var(--track-base-color);
+            border-radius: 999px;
+            vertical-align: text-bottom;
+            transition: all .4s ease;
+        }
+    
+        /* Slider track when OFF */
+        .toggle-switch i::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            width: 89.5%;
+            height: 85%;
+            background-color: var(--track-base-color);
+            opacity: 1;
+            border-radius: 999px;
+            transform: translate3d(7.5%, 7.5%, 0) scale3d(1, 1, 1);
+            transition: all .4s ease-out;
+        }
+    
+        /* Slider handle */
+        .toggle-switch i::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            height: 87%;
+            width: 49.75%;
+            background-color: var(--handle-color);
+            border-radius: 999px;
+            box-shadow: 0 1.5px 1.5px var(--handle-shadow-color);
+            transform: translate3d(7.5%, 7.5%, 0);
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(.09, .5, 0, 1.2);
+        }
+    
+        /* Slider handle when pressing */
+        .toggle-switch:active i::after {
+            width: 60%;
+            transform: translate3d(7.5%, 7.5%, 0);
+            transition: all 0.2s ease;
+        }
+    
+        /* Slider handle when ON AND pressing */
+        .toggle-switch:active input:checked+i::after {
+            transform: translate3d(60%, 7.5%, 0);
+        }
+    
+        /* Overall background/container when ON */
+        .toggle-switch input:checked+i {
+            background-color: var(--track-active-color);
+        }
+    
+        /* Slider track when ON */
+        .toggle-switch input:checked+i::before {
+            opacity: 1;
+            transform: translate3d(40%, 7.5%, 0) scale3d(0, 0, 0);
+        }
+    
+        /* Slider handle when ON */
+        .toggle-switch input:checked+i::after {
+            transform: translate3d(95%, 7.5%, 0);
+        }
+
+        /* Layer Panel Button */
+
+        #btnLayerPanel button .maplibregl-ctrl-icon {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 19.8167 21.5682'%3E%0A%3Cg%3E%0A%20%20%3Crect%20height%3D%2221.5682%22%20opacity%3D%220%22%20width%3D%2219.8167%22%20x%3D%220%22%20y%3D%220%22/%3E%0A%20%20%3Cpath%20d%3D%22M18.5396%2014.456C19.1822%2014.8272%2019.4554%2015.131%2019.4554%2015.5856C19.4554%2016.044%2019.1822%2016.3479%2018.5396%2016.719L10.7515%2021.2283C10.3614%2021.4564%2010.0532%2021.5682%209.7292%2021.5682C9.39541%2021.5682%209.09697%2021.4564%208.70693%2021.2283L0.909083%2016.719C0.266407%2016.3479%200%2016.044%200%2015.5856C0%2015.131%200.266407%2014.8272%200.909083%2014.456L2.93501%2013.2844L4.16663%2013.9977L1.6583%2015.4372C1.59502%2015.4719%201.54756%2015.5163%201.54756%2015.5856C1.54756%2015.6587%201.59502%2015.7031%201.6583%2015.7378L9.34121%2020.147C9.48906%2020.2258%209.60459%2020.2686%209.7292%2020.2686C9.85078%2020.2686%209.96631%2020.2258%2010.1074%2020.147L17.7903%2015.7378C17.8604%2015.7031%2017.9078%2015.6587%2017.9078%2015.5856C17.9078%2015.5163%2017.8604%2015.4719%2017.7903%2015.4372L15.2841%2013.9989L16.5162%2013.2844Z%22%20fill%3D%22white%22/%3E%0A%20%20%3Cpath%20d%3D%22M4.39162%209.26414L1.6583%2010.8293C1.59502%2010.864%201.54756%2010.9084%201.54756%2010.9845C1.54756%2011.0575%201.59502%2011.0952%201.6583%2011.1366L9.34121%2015.5391C9.48906%2015.6179%209.60459%2015.6637%209.7292%2015.6637C9.85078%2015.6637%209.96631%2015.6179%2010.1074%2015.5391L17.7903%2011.1366C17.8604%2011.0952%2017.9078%2011.0575%2017.9078%2010.9845C17.9078%2010.9084%2017.8604%2010.864%2017.7903%2010.8293L15.0592%209.26539L16.2939%208.55L18.5396%209.85108C19.1822%2010.229%2019.4554%2010.523%2019.4554%2010.9845C19.4554%2011.4429%2019.1822%2011.7399%2018.5396%2012.1111L10.7515%2016.6272C10.3614%2016.8552%2010.0532%2016.97%209.7292%2016.97C9.39541%2016.97%209.09697%2016.8552%208.70693%2016.6272L0.909083%2012.1111C0.266407%2011.7399%200%2011.4429%200%2010.9845C0%2010.523%200.266407%2010.229%200.909083%209.85108L3.15751%208.55Z%22%20fill%3D%22white%22%20fill-opacity%3D%220.85%22/%3E%0A%20%20%3Cpath%20d%3D%22M9.7292%2012.1011C10.0532%2012.1011%2010.3614%2011.9862%2010.7515%2011.7612L18.5396%207.24893C19.1822%206.87774%2019.4554%206.57696%2019.4554%206.11553C19.4554%205.66084%2019.1822%205.36006%2018.5396%204.98887L10.7515%200.476565C10.3614%200.251565%2010.0532%200.136721%209.7292%200.136721C9.39541%200.136721%209.09697%200.251565%208.70693%200.476565L0.909083%204.98887C0.266407%205.36006%200%205.66084%200%206.11553C0%206.57696%200.266407%206.87774%200.909083%207.24893L8.70693%2011.7612C9.09697%2011.9862%209.39541%2012.1011%209.7292%2012.1011ZM9.7292%2010.8015C9.60459%2010.8015%209.48906%2010.7557%209.34121%2010.6769L1.6583%206.26768C1.59502%206.23604%201.54756%206.18858%201.54756%206.11553C1.54756%206.0462%201.59502%206.00176%201.6583%205.96709L9.34121%201.56094C9.48906%201.48213%209.60459%201.43633%209.7292%201.43633C9.85078%201.43633%209.96631%201.48213%2010.1074%201.56094L17.7903%205.96709C17.8604%206.00176%2017.9078%206.0462%2017.9078%206.11553C17.9078%206.18858%2017.8604%206.23604%2017.7903%206.26768L10.1074%2010.6769C9.96631%2010.7557%209.85078%2010.8015%209.7292%2010.8015Z%22%20fill%3D%22white%22/%3E%0A%20%3C/g%3E%0A%3C/svg%3E");
+        }
+
+
+        /* Mobile breakpoint for layer panel */
+        @media (max-width: 500px) {
+            #layerPanel {
+                width: 100%;
+                max-width: 100vw;
+                max-height: 60%;
+                top: auto;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                box-shadow: none;
+                border-radius: 18px 18px 0 0;
+                border-bottom: none;
+                border-right: none;
+                border-left: none;
+                padding: 12px 12px 48px 12px;
+                
+
+                /* Hide by default */
+                transform: translateY(300px);
+                opacity: 0;
+                transition: transform .25s ease, opacity .25s ease;
+            }
+
+            #layerPanel.visible {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: all;
+                box-shadow: 0 0 64px #00000088;
+            }
+
+            .basemapOptions {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="loadingIndicator">Loading...</div>
+<div id="map"></div>
+
+<div id="inspector"></div>
+
+<div class="inputDateHolder" id="insertTopLeft">
+    <input type="text" id="inputDate" class="maplibregl-ctrl">
+</div>
+
+<div id="btnLayerPanel" class="maplibregl-ctrl maplibregl-ctrl-group">
+    <button id="btnLayerPanel" class="maplibregl-ctrl-icon">
+        <span class="maplibregl-ctrl-icon"></span>
+</div>
+
+<div id="layerPanel" class="maplibregl-ctrl">
+    <h1>Layers</h1>
+    <div class="basemapOptions">
+        <div id="btnStreets" class="buttonMapStyle basemapStreets active">Streets</div>
+        <div id="btnSatellite" class="buttonMapStyle basemapSatellite">Hybrid</div>
+    </div>
+
+    <h2>Radar</h2>
+
+    <ul>   
+
+        <li>
+            <label for="chkHailRad" class="option-label">Hail radar</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkHailRad" checked>
+                <i></i>
+            </label>
+        </li>
+
+    </ul>
+
+    <h2>Reports</h2>
+
+    <ul>
+
+        <li>
+            <label for="chkHailRpts" class="option-label">Hail reports</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkHailRpts" checked>
+                <i></i>
+            </label>
+        </li>
+
+        <li>
+            <label for="chkWindRpts" class="option-label">Wind reports</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkWindRpts" checked>
+                <i></i>
+            </label>
+        </li>
+
+        <li>
+            <label for="chkTornadoRpts" class="option-label">Tornado reports</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkTornadoRpts" checked>
+                <i></i>
+            </label>
+        </li>
+
+    </ul>
+
+    <h2>Options</h2>
+
+    <ul>
+
+        <li>
+            <label for="chkClusterMarkers" class="option-label">Cluster reports</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkClusterMarkers" checked>
+                <i></i>
+            </label>
+        </li>
+
+        <li>
+            <label for="chkShowInspector" class="option-label">Show Inspector</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="chkShowInspector" checked>
+                <i></i>
+            </label>
+        </li>
+
+    </ul>
+</div>
+
+<script>
+
+// INSPECTOR STUFF
+
+// Array to store inspector data
+var showInspector = true;
+var inspectorData = {};
+var inspectorTargetX = 0;
+var inspectorTargetY = 0;
+var inspectorX = 0;
+var inspectorY = 0;
+
+// Update on mouse move
+document.addEventListener('mousemove', (e) => {
+    // Set target positions to the mouse coordinates
+    inspectorTargetX = e.clientX;
+    inspectorTargetY = e.clientY;
+
+    // Update the inspector data
+    updateInspectorData();
+});
+
+// Loop to continuously update the inspector location smoothly
+setInterval(() => {
+    // Smoothly move the inspector towards the target position
+    inspectorX += (inspectorTargetX - inspectorX) * 0.2; // Adjust 0.1 to control the smoothness
+    inspectorY += (inspectorTargetY - inspectorY) * 0.2;
+
+    // Update inspector position on the page
+    document.getElementById('inspector').style.top = inspectorY + 8 + 'px';
+    document.getElementById('inspector').style.left = inspectorX + 8 + 'px';
+}, 16); // 60 FPS (~16ms per frame)
+
+
+    function updateInspectorData() {
+        
+        // Update the inspector data
+        if (Object.keys(inspectorData).length > 0 && showInspector) {
+            const dataEntries = Object.values(inspectorData);
+            document.getElementById('inspector').innerHTML = dataEntries.join('<br>');
+            document.getElementById('inspector').style.display = '';
+        } else {
+            document.getElementById('inspector').innerHTML = '';
+            document.getElementById('inspector').style.display = 'none';
+        }
+        
+    }
+
+    var firstSymbolId;
+    var clusterMarkers = true;
+
+    //var queryDateTime = new Date(); // Set datetime object to system datetime
+    // For testing, set the datetime to 2023-08-12 00:00:00 UTC
+    var queryDateTime = new Date(Date.UTC(2023, 7, 12, 5, 0, 0));
+
+    // Set the datetime to midnight (00:00:00) of the current day
+    queryDateTime.setHours(0, 0, 0, 0);
+
+    // Initialize Flatpickr with the change event for updating the datetime
+    const fp = flatpickr("#inputDate", {
+        //disableMobile: true,
+        dateFormat: "m/d/y",
+        position: "auto center", // Automatically position above if there's no space below
+        defaultDate: queryDateTime,
+        onChange: function (datetimes, dateStr, instance) {
+            // Set queryDateTime to midnight (00:00:00) of the day after the selected date
+            queryDateTime = new Date(datetimes[0]);
+            queryDateTime.setHours(0, 0, 0, 0);
+
+            updateLayers(false); // Update the layers with the new datetime
+        }
+    });
+
+
+
+    function replacePlaceholders(text, datetime) {
+        // Define replacement patterns
+        const replacements = {
+            '{{YYYY}}': datetime.getUTCFullYear(),
+            '{{mm}}': String(datetime.getUTCMonth() + 1).padStart(2, '0'), // Month is 0-based in JavaScript
+            '{{dd}}': String(datetime.getUTCDate()).padStart(2, '0'),
+            '{{HH}}': String(datetime.getUTCHours()).padStart(2, '0'),
+            '{{MM}}': String(datetime.getUTCMinutes()).padStart(2, '0'),
+            '{{SS}}': String(datetime.getUTCSeconds()).padStart(2, '0')
+        };
+
+        // Replace each placeholder with the corresponding date/time part
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            text = text.replace(new RegExp(placeholder, 'g'), value);
+        }
+
+        return text;
+    }
+
+// COLOR RAMPS
+
+const rampHail = [
+    { value: -1, color: '#df9253', name: 'hail-icon-default' },
+    { value: 0, color: '#ffff49', name: 'hail-icon-0' },
+    { value: 0.5, color: '#e5ad1b', name: 'hail-icon-0.5' },
+    { value: 1, color: '#e4751c', name: 'hail-icon-1' },
+    { value: 1.5, color: '#e33e1d', name: 'hail-icon-1.5' },
+    { value: 2, color: '#e11e33', name: 'hail-icon-2' },
+    { value: 2.5, color: '#e01f6a', name: 'hail-icon-2.5' },
+    { value: 3, color: '#df209f', name: 'hail-icon-3' }
+];
+
+
+const rampWind = [
+    { value: -1, color: '#404B6D', name: 'wind-icon-default' },
+    { value: 0, color: '#491fa3', name: 'wind-icon-0' },
+    { value: 50, color: '#006299', name: 'wind-icon-50' },
+    { value: 60, color: '#007e9e', name: 'wind-icon-60' },
+    { value: 70, color: '#009aaa', name: 'wind-icon-70' },
+    { value: 80, color: '#00bd9e', name: 'wind-icon-80' },
+    { value: 90, color: '#00e55e', name: 'wind-icon-90' },
+    { value: 100, color: '#bcf519', name: 'wind-icon-100' }
+];
+
+
+const rampTornado = [
+    { value: -1, color: '#404B6D', name: 'tornado-icon-default' },
+    { value: 0, color: '#006299', name: 'tornado-icon-0' },
+    { value: 1, color: '#007e9e', name: 'tornado-icon-1' },
+    { value: 2, color: '#009aaa', name: 'tornado-icon-2' },
+    { value: 3, color: '#00bd9e', name: 'tornado-icon-3' },
+    { value: 4, color: '#00e55e', name: 'tornado-icon-4' },
+    { value: 5, color: '#bcf519', name: 'tornado-icon-5' }
+];
+
+
+const iconDataURIs = {};
+function initializeMarkers(map) {
+    const addMarker = (name, color, template) => {
+        let svg = '';
+
+        if (template === undefined || template === 'empty') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .pin{fill:${color};}
+                </style>
+                <path class="pin" d="M12,0C7,0,2.4,3.9,2.4,9.8c0,4,3.2,8.7,9.6,14.1c6.4-5.4,9.6-10.1,9.6-14.1C21.6,3.9,17,0,12,0z"/>
+                </svg>
+            `;
+        }
+
+        if (template === 'pinDot') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .pin{fill:${color};}
+                    .icon{fill:#FFFFFF;}
+                </style>
+                <path class="pin" d="M12,0C7,0,2.4,3.9,2.4,9.8c0,4,3.2,8.7,9.6,14.1c6.4-5.4,9.6-10.1,9.6-14.1C21.6,3.9,17,0,12,0z"/>
+                <circle class="icon" cx="12" cy="9.6" r="2.4"/>
+                </svg>
+            `;
+        }
+
+        if (template === 'dot') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .pin{fill:${color};}
+                </style>
+                <circle class="pin" cx="12" cy="12" r="12"/>
+                </svg>
+            `;
+        }
+
+        if (template === 'hailReport') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .circle{fill:${color};}
+                    .icon{fill:#FFFFFF;}
+                </style>
+                <circle class="circle" cx="12" cy="12" r="12"/>
+                    <g>
+                        <path class="icon" d="M9.6,14.9l-1.1,0.8c-0.2,0.2-0.3,0.4-0.2,0.7l0.4,1.3c0.1,0.3,0.3,0.4,0.6,0.4h1.4c0.3,0,0.5-0.2,0.6-0.4
+                            l0.4-1.3c0.1-0.3,0-0.5-0.2-0.7l-1.1-0.8C10.1,14.7,9.8,14.7,9.6,14.9z"/>
+                        <path class="icon" d="M16.5,8.4L15.3,9c-0.2,0.1-0.4,0.4-0.4,0.6l0.1,1.4c0,0.3,0.2,0.5,0.5,0.6l1.3,0.3c0.3,0.1,0.5-0.1,0.7-0.3
+                            l0.7-1.2c0.1-0.2,0.1-0.5-0.1-0.7l-0.9-1C17.1,8.4,16.8,8.3,16.5,8.4z"/>
+                        <path class="icon" d="M16.5,14.3l-1.4-0.1c-0.3,0-0.5,0.1-0.6,0.4L14,15.8c-0.1,0.2,0,0.5,0.2,0.7l1,0.9c0.2,0.2,0.5,0.2,0.7,0.1
+                            l1.2-0.7c0.2-0.1,0.3-0.4,0.3-0.7l-0.3-1.3C17,14.5,16.8,14.3,16.5,14.3z"/>
+                        <path class="icon" d="M12.8,13.6c-0.2,0-0.4-0.1-0.5-0.2L6.8,7.9c-0.3-0.3-0.3-0.8,0-1.1s0.8-0.3,1.1,0l5.5,5.5
+                            c0.3,0.3,0.3,0.8,0,1.1C13.2,13.5,13,13.6,12.8,13.6z"/>
+                        <path class="icon" d="M14,8.1c-0.2,0-0.4-0.1-0.5-0.2L12,6.5c-0.3-0.3-0.3-0.8,0-1.1s0.8-0.3,1.1,0l1.4,1.4c0.3,0.3,0.3,0.8,0,1.1
+                            C14.4,8,14.2,8.1,14,8.1z"/>
+                        <path class="icon" d="M7.4,14.6c-0.2,0-0.4-0.1-0.5-0.2L5.5,13c-0.3-0.3-0.3-0.8,0-1.1s0.8-0.3,1.1,0L8,13.3c0.3,0.3,0.3,0.8,0,1.1
+                            C7.8,14.6,7.6,14.6,7.4,14.6z"/>
+                    </g>
+                </svg>
+            `;
+        }
+
+        if (template === 'windReport') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .circle{fill:${color};}
+                    .icon{fill:#FFFFFF;}
+                </style>
+                <circle class="circle" cx="12" cy="12" r="12"/>
+                <path class="icon" d="M11.66355,17.71966c-0.35888,0-0.69252-0.08973-1.00095-0.26916
+                    c-0.30841-0.17944-0.55794-0.42617-0.7486-0.74019c-0.12337-0.2243-0.12616-0.44861-0.00842-0.6729
+                    c0.11776-0.2243,0.30001-0.33645,0.54673-0.33645c0.14579,0,0.27476,0.04486,0.38692,0.13458
+                    c0.11215,0.08972,0.21308,0.19066,0.3028,0.3028c0.05608,0.0785,0.13177,0.13739,0.2271,0.17664
+                    c0.09533,0.03925,0.19345,0.05887,0.29439,0.05887c0.19066,0,0.35047-0.06448,0.47944-0.19345
+                    c0.12897-0.12897,0.19345-0.28878,0.19345-0.47944s-0.06448-0.35047-0.19345-0.47944
+                    c-0.12897-0.12897-0.28878-0.19345-0.47944-0.19345H5.94389c-0.19066,0-0.35047-0.06448-0.47944-0.19345
+                    c-0.12897-0.12897-0.19346-0.28878-0.19346-0.47944c0-0.19066,0.06448-0.35047,0.19346-0.47944
+                    c0.12897-0.12899,0.28878-0.19347,0.47944-0.19347h5.71966c0.56075,0,1.03739,0.19626,1.42992,0.58879
+                    c0.39253,0.39253,0.58879,0.86916,0.58879,1.42992c0,0.56075-0.19626,1.03739-0.58879,1.42992
+                    C12.70094,17.5234,12.2243,17.71966,11.66355,17.71966z M5.94389,10.99065c-0.19066,0-0.35047-0.06448-0.47944-0.19345
+                    c-0.12897-0.12897-0.19346-0.2888-0.19346-0.47944s0.06448-0.35047,0.19345-0.47944
+                    c0.12897-0.12897,0.28878-0.19345,0.47944-0.19345h8.41127c0.28037,0,0.51869-0.09813,0.71496-0.29439
+                    c0.19627-0.19626,0.29439-0.43458,0.29439-0.71496c0-0.28037-0.09813-0.51869-0.29439-0.71496
+                    c-0.19626-0.19626-0.43459-0.29439-0.71496-0.29439c-0.17943,0-0.34766,0.04206-0.50467,0.12616s-0.28038,0.20467-0.37011,0.36167
+                    c-0.0785,0.13458-0.17383,0.25514-0.28599,0.36168c-0.11214,0.10654-0.24673,0.15981-0.40374,0.15981
+                    c-0.2243,0-0.40655-0.08411-0.54673-0.25234c-0.14017-0.16821-0.17663-0.34765-0.10934-0.53831
+                    c0.15701-0.47103,0.44019-0.84954,0.84954-1.13553c0.40934-0.28599,0.86635-0.42897,1.37104-0.42897
+                    c0.65048,0,1.20561,0.22991,1.66543,0.68973s0.68973,1.01495,0.68973,1.66543c0,0.65048-0.22991,1.20561-0.68973,1.66543
+                    c-0.45982,0.45982-1.01495,0.68973-1.66543,0.68973C14.35516,10.99065,5.94389,10.99065,5.94389,10.99065z M17.34957,16.17198
+                    c-0.2243,0.10093-0.44299,0.08691-0.65608-0.04206c-0.21309-0.12897-0.31963-0.31682-0.31963-0.56355
+                    c0-0.15701,0.05327-0.28878,0.15981-0.39532c0.10654-0.10654,0.2271-0.19907,0.36168-0.27757
+                    c0.15701-0.08972,0.27757-0.21308,0.36168-0.37009c0.08411-0.15701,0.12617-0.32524,0.12617-0.50467
+                    c0-0.28037-0.09813-0.51869-0.29439-0.71496c-0.19625-0.19627-0.43456-0.29439-0.71494-0.29439H5.94389
+                    c-0.19066,0-0.35047-0.06448-0.47944-0.19345c-0.12897-0.12899-0.19346-0.2888-0.19346-0.47946s0.06448-0.35047,0.19345-0.47944
+                    c0.12897-0.12897,0.28878-0.19345,0.47944-0.19345h10.42996c0.65048,0,1.20561,0.22991,1.66543,0.68973
+                    c0.45982,0.45982,0.68973,1.01497,0.68973,1.66543c0,0.47103-0.12337,0.90001-0.37009,1.28692S17.77573,15.98134,17.34957,16.17198z
+                    "/>
+                </svg>
+            `;
+        }
+
+        if (template === 'tornadoReport') {
+            svg = `
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;">
+                <style type="text/css">
+                    .circle{fill:${color};}
+                    .icon{fill:#FFFFFF;}
+                </style>
+                <circle class="circle" cx="12" cy="12" r="12"/>
+                <path class="icon" d="M7.07375,7.45628c0.43478-0.7139,2.33589-1.29263,5.21735-1.29263s4.74523,0.6875,5.21734,1.29263
+                    c0.65217,0.8359-0.36739,2.81136-3.47823,4.73962c-2.65233,1.64405-4.60777,3.24304-3.04345,3.87788
+                    c2.50564,1.01684,2.42757,2.22511,2.10779,2.90736c-0.09943,0.21214-0.40458,0.18349-0.48318-0.03722
+                    c-0.14313-0.40192-0.46519-0.90726-1.18983-1.14664c-2.20483-0.72834-3.04345-1.29263-3.91301-2.15438
+                    c-0.6578-0.65189-1.36572-2.70944,0.86956-4.73962C9.49039,9.89302,6.23957,8.82598,7.07375,7.45628L7.07375,7.45628z"/>
+                </svg>
+            `;
+        }
+
+        const encodedSVG = "data:image/svg+xml," + encodeURIComponent(svg);
+        const icon = new Image(96, 96);
+        icon.src = encodedSVG;
+        icon.onload = () => {
+            map.addImage(name, icon, { pixelRatio: 4 });
+        };
+        // Store the data URI for later use in popups
+        iconDataURIs[name] = encodedSVG;
+    };
+
+
+    rampHail.forEach(({ value, color, name }, index) => {
+        addMarker(name, color, 'hailReport');
+    });
+
+
+    rampWind.forEach(({ value, color, name }, index) => {
+        addMarker(name, color, 'windReport');
+    });
+
+    rampTornado.forEach(({ value, color, name }, index) => {
+        addMarker(name, color, 'tornadoReport');
+    });
+
+    addMarker('default-marker', '#0086F8', 'pinDot');
+
+    addMarker('dot-badge', '#0086F8', 'dot');
+}
+
+
+
+function updateLayers(forceRedraw) {
+    // HAIL POLYGON LAYER
+
+    let urlMESHMAX1440 = replacePlaceholders('https://hailmaps.s3.us-east-2.amazonaws.com/data/MRMS/MESHMAX1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/tiles/{z}/{x}/{y}.pbf', queryDateTime);
+
+    if (map.getLayer('layerFillMESHMAX1440') && !forceRedraw) {
+        map.getSource('srcMESHMAX1440').setTiles([urlMESHMAX1440]);
+    } else {
+
+        // Remove existine laters if they exist
+        if (map.getLayer('layerFillMESHMAX1440')) {
+            map.removeLayer('layerFillMESHMAX1440');
+        }
+
+        if (map.getLayer('layerStrokeMESHMAX1440')) {
+            map.removeLayer('layerStrokeMESHMAX1440');
+        }
+
+        if (map.getSource('srcMESHMAX1440')) {
+            map.removeSource('srcMESHMAX1440');
+        }
+
+        // Create the color map
+
+        colorMap = [
+            'step',
+            ['get', 'value'],
+        ];
+        
+        if (rampHail[0].value = -1) {
+            colorMap.push(rampHail[0].color);
+        }
+        
+        // Only push values from rampHail that are >= 0
+        colorMap.push(...rampHail
+            .filter(({ value }) => value >= 0)  // Filter out values below 0
+            .flatMap(({ value, color }) => [value, color])
+        );
+        
+
+        // Add the tile source
+        map.addSource('srcMESHMAX1440', {
+            type: 'vector',
+            tiles: [urlMESHMAX1440],
+            minzoom: 0,
+            maxzoom: 6
+        });
+
+        // Add the fill layer
+        map.addLayer({
+            id: 'layerFillMESHMAX1440',
+            type: 'fill',
+            source: 'srcMESHMAX1440',
+            'source-layer': 'layer',
+            paint: {
+                'fill-color': colorMap,
+                'fill-opacity': 0.4,
+                'fill-outline-color': 'rgba(0, 0, 0, 0)',
+            }
+        }, "Road labels");
+
+        // Add the stroke layer
+        map.addLayer({
+            id: 'layerStrokeMESHMAX1440',
+            type: 'line',
+            source: 'srcMESHMAX1440',
+            'source-layer': 'layer',
+            paint: {
+                'line-color': colorMap,
+                'line-width': 1.5,
+                'line-opacity': 0.8
+            }
+        }, "Road labels");
+
+        map.on('mousemove', 'layerFillMESHMAX1440', function (e) {
+            const id = 'layerFillMESHMAX1440';
+            const value = e.features[0].properties.value;
+            
+            inspectorData[id] = `${value}" Hail (radar)`;
+
+            updateInspectorData();
+        });
+
+        map.on('mouseleave', 'layerFillMESHMAX1440', function () {
+            delete inspectorData['layerFillMESHMAX1440'];
+            updateInspectorData();
+        });
+    }
+
+        drawGeoJsonPointLayer(
+            "WindReports",
+            "Wind Reports",
+            "Wind",
+            "https://hailmaps.s3.us-east-2.amazonaws.com/data/SPC/SPCRPTS/WIND1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/data.geojson",
+            rampWind,
+            "",
+            " MPH"
+        );
+
+        drawGeoJsonPointLayer(
+            "HailReports",
+            "Hail Reports",
+            "Hail",
+            "https://hailmaps.s3.us-east-2.amazonaws.com/data/SPC/SPCRPTS/HAIL1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/data.geojson",
+            rampHail,
+            "",
+            `"`
+        );
+
+        drawGeoJsonPointLayer(
+            "TornadoReports",
+            "Tornado Reports",
+            "Tornado",
+            "https://hailmaps.s3.us-east-2.amazonaws.com/data/SPC/SPCRPTS/TORNADO1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/data.geojson",
+            rampTornado,
+            "EF-",
+            ""
+        );
+
+        function drawGeoJsonPointLayer(layerId, name, itemName, dataUrl, ramp, valuePrefix, valueSuffix) {
+
+            const url = replacePlaceholders(dataUrl, queryDateTime);
+            const srcId = `src${layerId}`;
+
+            if (map.getSource(srcId) && !forceRedraw) {
+                map.getSource(srcId).setData(url);
+            } else {
+
+                const markerId = `layer${layerId}`;
+                const clusterId = `layer${layerId}Cluster`;
+                const clusterBadgeId = `layer${layerId}ClusterBadge`;
+                const clusterLabelId = `layer${layerId}ClusterLabel`;
+
+                // Remove existine laters if they exist
+                if (map.getLayer(markerId)) {
+                    map.removeLayer(markerId);
+                }
+
+                if (map.getLayer(clusterId)) {
+                    map.removeLayer(clusterId);
+                }
+
+                if (map.getLayer(clusterBadgeId)) {
+                    map.removeLayer(clusterBadgeId);
+                }
+
+                if (map.getLayer(clusterLabelId)) {
+                    map.removeLayer(clusterLabelId);
+                }
+
+                if (map.getSource(srcId)) {
+                    map.removeSource(srcId);
+                }
+
+
+
+                const markerMap = ['case'];
+                if (ramp[0].value == -1) {
+                    markerMap.push(['==', ['get', 'value'], "unknown"], ramp[0].name);
+                }
+                ramp.forEach(({ value, name }) => {
+                    markerMap.push(['<=', ['get', 'value'], value], name);
+                });
+                if (ramp[0].value == -1) {
+                    markerMap.push(ramp[0].name);
+                }
+
+                
+                const clusterMap = ['case'];
+                if (ramp[0].value == -1) {
+                    clusterMap.push(['==', ['get', 'maxValue'], -1], ramp[0].name);
+                }
+                ramp.forEach(({ value, name }) => {
+                    clusterMap.push(['<=', ['get', 'maxValue'], value], name);
+                });
+                if (ramp[0].value == -1) {
+                    clusterMap.push(ramp[0].name);
+                }
+
+
+                // Add the GeoJSON source
+                map.addSource(srcId, {
+                    type: 'geojson',
+                    data: url, 
+                    cluster: clusterMarkers,
+                    clusterRadius: 36,
+                    clusterMaxZoom: 10,
+                    clusterProperties: {
+                        maxValue: ['max', ['coalesce', ['to-number', ['get', 'value'], -1], -1]],
+                        minValue: ['min', ['coalesce', ['to-number', ['get', 'value'], -1], -1]]
+                    }
+                });
+
+                // Cluster icon 
+                map.addLayer({
+                    id: clusterId,
+                    type: 'symbol',
+                    source: srcId,
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'icon-image': clusterMap,
+                        'icon-size': 1.2,
+                        'icon-allow-overlap': false,
+                        'icon-ignore-placement': false,
+                        'icon-overlap': 'always',
+                        'icon-anchor': 'center',
+                    }
+                });
+                
+                // Cluster badge
+                map.addLayer({
+                    id: clusterBadgeId,
+                    type: 'symbol',
+                    source: srcId,
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'icon-image': 'dot-badge',
+                        'icon-size': .8,
+                        'icon-allow-overlap': false,
+                        'icon-ignore-placement': false,
+                        'icon-overlap': 'always',
+                        'icon-offset': [14, -14]
+                    }
+                });
+
+                // Cluster badge label
+                map.addLayer({
+                    id: clusterLabelId,
+                    type: 'symbol',
+                    source: srcId,
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'text-field': '{point_count}',
+                        'text-font': ['San Francisco Display Bold', 'Arial Unicode MS Bold'],
+                        'text-size': 12,
+                        'text-offset': [.9, -.9],
+                        'text-allow-overlap': false,
+                        'text-ignore-placement': false,
+                        'text-overlap': 'always',
+                    },
+                    paint: {
+                        'text-color': '#ffffff'
+                    }
+                });
+
+                // Individual marker
+                map.addLayer({
+                    id: markerId,
+                    type: 'symbol',
+                    source: srcId,
+                    layout: {
+                        'icon-image': markerMap,
+                        'icon-size': 1.2,
+                        'icon-allow-overlap': false,
+                        'icon-ignore-placement': false,
+                        'icon-overlap': 'always',
+                        'icon-anchor': 'center'
+                    }
+                });
+
+                // Popup details on click for markers
+                map.on('click', markerId, function (e) {
+                    const value = e.features[0].properties.value;
+            
+                    // Function to get icon name based on value and ramp
+                    function getIconName(value, ramp) {
+                        if (ramp[0].value == -1 && (value == -1 || value == 'unknown')) {
+                            return ramp[0].name;
+                        }
+                        for (const { value: v, name } of ramp) {
+                            if (value <= v) {
+                                return name;
+                            }
+                        }
+                        if (ramp[0].value == -1) {
+                            return ramp[0].name; // Return default icon if no match
+                        } else {
+                            return 'default-marker'; // Or any default icon
+                        }
+                    }
+            
+                    const iconName = getIconName(value, ramp);
+                    const iconDataURI = iconDataURIs[iconName];
+
+
+                    // Get e.features[0].properties.time which is a UTC time/date in the format 2023-08-11 22:27:00 and convert it to local time
+                    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const localTimeOffset = new Date().getTimezoneOffset() / -60;
+                    const localTime = new Date(e.features[0].properties.time);
+                    localTime.setHours(localTime.getHours() + localTimeOffset);
+                    // Format the local time as a string with formay HH:MM AM/PM
+                    const localTimeStr = localTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                    if (value == -1 || value == 'unknown') {
+                        titleStr = `${itemName} report`;
+                    } else { 
+                        titleStr = `${valuePrefix}${value}${valueSuffix} ${itemName} report`;
+                    }
+
+            
+                new maplibregl.Popup()
+                    .setLngLat(e.features[0].geometry.coordinates)
+                    .setHTML(`
+                        <div style="display: flex; align-items: center;">
+                            <img src="${iconDataURI}" style="width: 32px; height: 32px; margin-right: 8px;" />
+                            <h1 style="margin: 0;">${titleStr}</h1>
+                        </div>
+                        <p><b>Time: </b>${localTimeStr}</p>
+                        <p>${e.features[0].properties.comments}</p>
+                    `)
+                    .addTo(map);
+                });
+
+                // Zoom in on click for cluster
+                map.on('click', clusterId, function (e) {
+                    const zoom = map.getZoom() + 3;
+                    map.zoomTo(zoom, { center: e.features[0].geometry.coordinates });
+                });
+
+
+                map.on('mousemove', markerId, function (e) {
+                    map.getCanvas().style.cursor = 'pointer';
+        
+                    // Get the value and unique ID of the hovered marker
+                    const value = e.features[0].properties.value;
+                    const key = markerId; // Use the marker's id as the key
+        
+                    // Add the value to inspectorData using the marker id as the key to avoid duplicates
+
+                    if (value == -1 || value == 'unknown') {
+                        inspectorData[key] = `${itemName} report`;
+                    } else { 
+                        inspectorData[key] = `${valuePrefix}${value}${valueSuffix} ${itemName} report`;
+                    }
+                    // Update the inspector display
+                    updateInspectorData();
+                });
+        
+                // Remove key:value pair from inspectorData when the mouse leaves the marker
+                map.on('mouseleave', markerId, function (e) {
+                    map.getCanvas().style.cursor = '';
+        
+                    // Get the id of the marker being hovered out
+                    const key = markerId;
+        
+                    // Remove the value from inspectorData
+                    delete inspectorData[key];
+        
+                    // Update the inspector display
+                    updateInspectorData();
+                });
+
+                map.on('mousemove', clusterId, function (e) {
+                    map.getCanvas().style.cursor = 'pointer';
+
+                    // Add the value to inspectorData using the cluster id as the key to avoid duplicates
+                    const key = clusterId;
+                    // Value should be the max value of the cluster
+                    const maxValue = e.features[0].properties.maxValue;
+                    const minValue = e.features[0].properties.minValue;
+                    const count = e.features[0].properties.point_count;
+
+                    if (minValue == maxValue  && maxValue != -1) {
+                        inspectorData[key] = `${valuePrefix}${maxValue}${valueSuffix} ${itemName} (${count} reports)`;
+                    } else if (minValue == -1 && maxValue != -1) {
+                        inspectorData[key] = `Up to ${valuePrefix}${maxValue}${valueSuffix} ${itemName} (${count} reports)`;
+                    } else if (minValue == -1 && maxValue == -1) {
+                        inspectorData[key] = `${itemName} (${count} reports)`;
+                    } else {
+                        inspectorData[key] = `${valuePrefix}${minValue} - ${maxValue}${valueSuffix} ${itemName} (${count} reports)`;
+                    }
+
+                    // Update the inspector display
+                    updateInspectorData();
+                });
+                map.on('mouseleave', clusterId, function (e) {
+                    map.getCanvas().style.cursor = '';
+
+                    // Get the id of the cluster being hovered out
+                    const key = clusterId;
+
+                    // Remove the value from inspectorData
+
+                    delete inspectorData[key];
+
+                    // Update the inspector display
+
+                    updateInspectorData();
+                });
+
+            }
+        
+        }
+    }
+    const apiKey = "uxGPO18AyvxUdEGKe02K";
+
+    const basemapStreets = 'https://api.maptiler.com/maps/d856b495-1396-447c-80d5-0fd7fca006e0/style.json?key=uxGPO18AyvxUdEGKe02K';
+
+    const basemapHybrid = 'https://api.maptiler.com/maps/3ced3330-18f8-46d3-957e-a57c168a6641/style.json?key=uxGPO18AyvxUdEGKe02K';
+
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: basemapStreets,
+        center: [-88.13734351262877, 35.137451890638886],
+        zoom: 4,
+        TerrainControl: true
+    });
+
+    map.on('load', () => {
+
+        let firstSymbolId;
+        function getFirstSymbolId() {
+            const layers = map.getStyle().layers;
+            // Find the index of the first symbol layer in the map style
+            for (let i = 0; i < layers.length; i++) {
+                if (layers[i].type === 'symbol') {
+                    firstSymbolId = layers[i].id;
+                    console.log(firstSymbolId);
+                    break;
+                }
+            }
+        }
+        getFirstSymbolId();
+        
+
+        // Move the date input into the top left corner of the map
+        document.querySelector('.maplibregl-ctrl-top-left').appendChild(document.getElementById('insertTopLeft'));
+
+        // Append the layer panel to the control container
+        document.querySelector('.maplibregl-control-container').appendChild(document.getElementById('layerPanel'));
+
+        // Click listeners for the basemap style buttons
+        document.getElementById('btnStreets').addEventListener('click', function () {
+            map.setStyle(basemapStreets, { diff: true });
+
+            // Wait for the style to load before updating the layers
+            map.once('render', function () {
+                getFirstSymbolId();
+                updateLayers(true); // Re-add layers after style is loaded
+                updateLayerVisibility();
+            });
+
+            document.getElementById('btnStreets').classList.add('active');
+            document.getElementById('btnSatellite').classList.remove('active');
+        });
+
+        document.getElementById('btnSatellite').addEventListener('click', function () {
+            map.setStyle(basemapHybrid, { diff: true });
+
+            // Wait for the style to load before updating the layers
+            map.once('render', function () {
+                getFirstSymbolId();
+                updateLayers(true); // Re-add layers after style is loaded
+                updateLayerVisibility();
+            });
+
+
+            document.getElementById('btnSatellite').classList.add('active');
+            document.getElementById('btnStreets').classList.remove('active');
+        });
+
+        chkHailRad = document.getElementById('chkHailRad');
+        chkHailRpts = document.getElementById('chkHailRpts');
+        chkWindRpts = document.getElementById('chkWindRpts');
+        chkTornadoRpts = document.getElementById('chkTornadoRpts');
+        // Show and hide layers based on the checkboxes
+        chkHailRad.addEventListener('change', function () {
+            updateLayerVisibility();
+        });
+
+        chkHailRpts.addEventListener('change', function () {
+            updateLayerVisibility();
+        });
+
+        chkWindRpts.addEventListener('change', function () {
+            updateLayerVisibility();
+        });
+
+        chkTornadoRpts.addEventListener('change', function () {
+            updateLayerVisibility();
+        });
+
+        function updateLayerVisibility() {
+            map.setLayoutProperty('layerFillMESHMAX1440', 'visibility', chkHailRad.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerStrokeMESHMAX1440', 'visibility', chkHailRad.checked ? 'visible' : 'none');
+
+            map.setLayoutProperty('layerHailReports', 'visibility', chkHailRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerHailReportsCluster', 'visibility', chkHailRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerHailReportsClusterBadge', 'visibility', chkHailRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerHailReportsClusterLabel', 'visibility', chkHailRpts.checked ? 'visible' : 'none');
+
+            map.setLayoutProperty('layerWindReports', 'visibility', chkWindRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerWindReportsCluster', 'visibility', chkWindRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerWindReportsClusterBadge', 'visibility', chkWindRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerWindReportsClusterLabel', 'visibility', chkWindRpts.checked ? 'visible' : 'none');
+
+            map.setLayoutProperty('layerTornadoReports', 'visibility', chkTornadoRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerTornadoReportsCluster', 'visibility', chkTornadoRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerTornadoReportsClusterBadge', 'visibility', chkTornadoRpts.checked ? 'visible' : 'none');
+            map.setLayoutProperty('layerTornadoReportsClusterLabel', 'visibility', chkTornadoRpts.checked ? 'visible' : 'none');
+        }
+
+        // Set cluster behavior based on the checkbox
+        document.getElementById('chkClusterMarkers').addEventListener('change', function () {
+            clusterMarkers = this.checked;
+            updateLayers(true);
+            updateLayerVisibility();
+        });
+
+        // Toggle inspector visibility
+        document.getElementById('chkShowInspector').addEventListener('click', function () {
+            showInspector = this.checked;
+        });
+
+
+        // Add loading indicator
+        map.on('dataloading', function() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        });
+
+        map.on('data', function(e) {
+            if (e.dataType === 'source' && e.isSourceLoaded) {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        });
+
+        initializeMarkers(map); // Calls the function which generates the markers for each color in the palette and adds them to the map context
+
+        const gc = new maplibreglMaptilerGeocoder.GeocodingControl({
+            apiKey,
+            maplibregl,
+            country: 'us',
+            noResultsMessage: 'No results found.'
+        });
+    
+        map.addControl(gc);
+
+        // Add the collapsed class to the geocoder control to start
+        geocoder = document.querySelector('.maplibregl-ctrl-geocoder');
+        geocoder.classList.add('collapsed');
+        geocoderButton = document.querySelector('.maplibregl-ctrl-geocoder form .input-group button');
+        geocoderInput = document.querySelector('.maplibregl-ctrl-geocoder form .input-group input')
+        geocoderClearButton = document.querySelector('.maplibregl-ctrl-geocoder form .input-group .clear-button-container button');
+        
+        geocoder.addEventListener('click', function() {
+            if (geocoder.classList.contains('collapsed')) {
+                geocoder.classList.remove('collapsed');
+                geocoderInput.focus();
+            }
+        });
+
+        geocoderInput.addEventListener('blur', function() {
+            // Delay the collapse of the geocoder control to allow the click event to fire
+            setTimeout(() => {
+                // Check if the geocoderInput is focused
+                if (!geocoderInput.matches(':focus')) {
+                    geocoder.classList.add('collapsed');
+                }
+            }, 100);
+        });
+
+        // When enter is pressed, blur the input to trigger the blur event
+        geocoderInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                setTimeout(() => {
+                    geocoderInput.blur();
+                }, 100);
+            }
+        });
+
+
+
+        // Add zoom and rotation controls to the map.
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Add geolocate control to the map.
+        map.addControl(
+            new maplibregl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true
+                },
+                trackUserLocation: true
+            })
+        );
+
+                // Append the layer panel button to the top right corner of the map
+                document.querySelector('.maplibregl-ctrl-top-right').appendChild(document.getElementById('btnLayerPanel'));
+        
+                // Show the layer panel when the button is clicked
+                document.getElementById('btnLayerPanel').addEventListener('click', function() {
+                    document.getElementById('layerPanel').classList.add('visible');
+                });
+        
+                // Hide the layer panel when the user clicks outside of it
+                document.addEventListener('mousedown', function(e) {
+                    if (!document.getElementById('layerPanel').contains(e.target) && !document.getElementById('btnLayerPanel').contains(e.target)) {
+                        document.getElementById('layerPanel').classList.remove('visible');
+                    }
+                });
+
+        // TERRAIN (DISABLED)
+        //map.addSource("terrain", {
+            //type: "raster-dem",
+            //url: "https://api.maptiler.com/tiles/terrain-rgb/tiles.json?key=uxGPO18AyvxUdEGKe02K"
+        //});
+
+        //map.setTerrain({
+            //source: "terrain",
+            //exaggeration: 2.5
+        //});
+
+        //map.addControl(new maplibregl.TerrainControl({
+            //source: "terrain"
+        //}));
+
+        updateLayers(false);
+    });
+</script>
+</body>
+</html>
