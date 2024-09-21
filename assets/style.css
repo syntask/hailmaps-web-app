@@ -477,14 +477,14 @@ span.flatpickr-weekday {
 }
 
 .basemapStreets {
-    background-image: url(assets/thumbnail-streets.png);
+    background-image: url(thumbnail-streets.png);
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 }
 
 .basemapSatellite {
-    background-image: url(assets/thumbnail-satellite.png);
+    background-image: url(thumbnail-satellite.png);
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
