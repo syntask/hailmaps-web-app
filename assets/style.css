@@ -56,6 +56,10 @@ input[type='text']{
     min-height: 44px;
 }
 
+.s-cal-popup {
+    z-index: 2;
+}
+
 
 .maplibregl-ctrl-geocoder form{
     background-color: #252525 !important;
