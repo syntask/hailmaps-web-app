@@ -1,3 +1,33 @@
+// INIT
+
+var firstSymbolId;
+var clusterMarkers = true;
+
+//var queryDateTime = new Date(); // Set datetime object to system datetime
+// For testing, set the datetime to 2023-08-12 00:00:00 UTC
+var queryDateTime = new Date(2023, 7, 11, 0, 0, 0);
+
+// Initialize S-Cal
+const inputDate = document.getElementById('inputDate');
+initSCal(inputDate, {
+    value: queryDateTime,
+    min: new Date(2023, 6, 1),
+    max: new Date(2023, 8, 30),
+    format: 'mm/dd/yy',
+    persistant: false
+});
+inputDate.addEventListener('change', function (e) {
+    // Parse the date from the input
+    var [month, day, year] = e.target.value.split('/');
+    // convert year from 2 digit to 4 digit
+    year = year.length === 2 ? '20' + year : year;
+    queryDateTime = new Date(year, month - 1, day);
+    updateLayers(false);
+});
+inputDate.value = queryDateTime.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
+
+
+
 // INSPECTOR STUFF
 
 // Array to store inspector data
@@ -43,31 +73,6 @@ setInterval(() => {
         }
         
     }
-
-    var firstSymbolId;
-    var clusterMarkers = true;
-
-    //var queryDateTime = new Date(); // Set datetime object to system datetime
-    // For testing, set the datetime to 2023-08-12 00:00:00 UTC
-    var queryDateTime = new Date(Date.UTC(2023, 7, 12, 5, 0, 0));
-
-    // Set the datetime to midnight (00:00:00) of the current day
-    queryDateTime.setHours(0, 0, 0, 0);
-
-    // Initialize Flatpickr with the change event for updating the datetime
-    const fp = flatpickr("#inputDate", {
-        //disableMobile: true,
-        dateFormat: "m/d/y",
-        position: "auto center", // Automatically position above if there's no space below
-        defaultDate: queryDateTime,
-        onChange: function (datetimes, dateStr, instance) {
-            // Set queryDateTime to midnight (00:00:00) of the day after the selected date
-            queryDateTime = new Date(datetimes[0]);
-            queryDateTime.setHours(0, 0, 0, 0);
-
-            updateLayers(false); // Update the layers with the new datetime
-        }
-    });
 
 
 
@@ -288,9 +293,15 @@ function initializeMarkers(map) {
 
 
 function updateLayers(forceRedraw) {
+
+
+    // Find the date 24 hours after the query date
+    var targetDate24Hours = new Date(queryDateTime);
+    targetDate24Hours.setUTCDate(targetDate24Hours.getUTCDate() + 1);
+
     // HAIL POLYGON LAYER
 
-    let urlMESHMAX1440 = replacePlaceholders('https://hailmaps.s3.us-east-2.amazonaws.com/data/MRMS/MESHMAX1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/tiles/{z}/{x}/{y}.pbf', queryDateTime);
+    let urlMESHMAX1440 = replacePlaceholders('https://hailmaps.s3.us-east-2.amazonaws.com/data/MRMS/MESHMAX1440/{{YYYY}}/{{mm}}/{{dd}}/{{HH}}{{MM}}{{SS}}/tiles/{z}/{x}/{y}.pbf', targetDate24Hours);
 
     if (map.getLayer('layerFillMESHMAX1440') && !forceRedraw) {
         map.getSource('srcMESHMAX1440').setTiles([urlMESHMAX1440]);
@@ -408,7 +419,7 @@ function updateLayers(forceRedraw) {
 
         function drawGeoJsonPointLayer(layerId, name, itemName, dataUrl, ramp, valuePrefix, valueSuffix) {
 
-            const url = replacePlaceholders(dataUrl, queryDateTime);
+            const url = replacePlaceholders(dataUrl, targetDate24Hours);
             const srcId = `src${layerId}`;
 
             if (map.getSource(srcId) && !forceRedraw) {
@@ -704,7 +715,6 @@ function updateLayers(forceRedraw) {
             for (let i = 0; i < layers.length; i++) {
                 if (layers[i].type === 'symbol') {
                     firstSymbolId = layers[i].id;
-                    console.log(firstSymbolId);
                     break;
                 }
             }

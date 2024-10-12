@@ -3,6 +3,13 @@
     --padding-right: max(env(safe-area-inset-right),8px);
     --padding-top: max(env(safe-area-inset-top),8px);
     --padding-bottom: max(env(safe-area-inset-bottom),8px);
+
+    /* S-Cal Theme */
+    --s-cal-background: #252525;
+    --s-cal-foreground: #FFFFFF;
+    --s-cal-accent: #0A84FF;
+    --s-cal-border: #FFFFFF22;
+    --s-cal-hover: #333
 }
 html, body {
     font-family: 'Arial';
@@ -37,6 +44,8 @@ input[type='text']{
     font-size: 1rem;
     padding-left: 12px;
     padding-right: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
     min-height: 2.5rem;
     max-height: 2.5rem;
     width: 72px;
@@ -44,112 +53,7 @@ input[type='text']{
     color: white;
     background-color: #252525;
     border: 1px solid #FFFFFF22;
-    height: 46px;
-}
-
-input[type='date']{
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: #252525;
-    color: white;
-    border: 1px solid #FFFFFF22;
-    border-radius: 12px;
-    height: 46px;
-    min-height: 46px;
-    max-height: 46px;
-    padding: 0 12px 0 12px;
-    box-sizing: border-box !important;
-    -webkit-box-sizing: border-box !important;
-    -moz-box-sizing: border-box !important;
-    font-size: 1rem;
-}
-
-.flatpickr-calendar {
-    left: 16px !important;
-    background-color: #252525;
-    border: 1px solid #FFFFFF22;
-    border-radius: 12px;
-    color: white;
-    box-shadow: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-}
-
-.flatpickr-calendar::before, .flatpickr-calendar::after {
-    border: none;
-}
-
-span.flatpickr-weekday {
-    color: white;
-}
-
-.flatpickr-day {
-    color: white;
-    border: none;
-}
-
-.flatpickr-day:hover {
-    background-color: #FFFFFF22;
-    border: none;
-}
-
-.flatpickr-day.selected {
-    background-color: #0086F8;
-    border: none;
-}
-
-.flatpickr-day.nextMonthDay, .flatpickr-day.prevMonthDay {
-    color: #777;
-    border: none;
-}
-
-.flatpickr-day.nextMonthDay:hover, .flatpickr-day.prevMonthDay:hover {
-    background-color: #FFFFFF22;
-    border: none;
-}
-
-.flatpickr-months .flatpickr-next-month, .flatpickr-months .flatpickr-prev-month{
-    color: white;
-    fill: white;
-}
-
-.flatpickr-months .flatpickr-prev-month:hover, .flatpickr-months .flatpickr-next-month:hover {
-    color:#0086F8;
-}
-
-.flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg {
-    fill: #0086F8;
-}
-.flatpickr-current-month .flatpickr-monthDropdown-months{
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: #252525;
-    color: white;
-    border: none;
-}
-
-.flatpickr-current-month input.cur-year{
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-color: #252525;
-    color: white;
-    border: none;
-}
-
-.flatpickr-current-month .numInputWrapper span.arrowUp::after{
-    border-bottom-color: #FFFFFF;;
-}
-
-.flatpickr-current-month .numInputWrapper span.arrowDown::after{
-    border-top-color: #FFFFFF;
-}
-
-.maplibregl-ctrl-geocoder {
-    width: min(calc(100vw - var(--padding-left) - var(--padding-right)), 450px);
-    transition: width .25s cubic-bezier(.15,.85,.5,1);
+    min-height: 44px;
 }
 
 
