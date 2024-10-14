@@ -3,6 +3,43 @@
 var firstSymbolId;
 var clusterMarkers = true;
 
+
+// COLOR RAMPS
+
+const rampHail = [
+    { value: -1, color: '#df9253', name: 'hail-icon-default' },
+    { value: 0, color: '#ffff49', name: 'hail-icon-0' },
+    { value: 0.5, color: '#e5ad1b', name: 'hail-icon-0.5' },
+    { value: 1, color: '#e4751c', name: 'hail-icon-1' },
+    { value: 1.5, color: '#e33e1d', name: 'hail-icon-1.5' },
+    { value: 2, color: '#e11e33', name: 'hail-icon-2' },
+    { value: 2.5, color: '#e01f6a', name: 'hail-icon-2.5' },
+    { value: 3, color: '#df209f', name: 'hail-icon-3' }
+];
+
+
+const rampWind = [
+    { value: -1, color: '#404B6D', name: 'wind-icon-default' },
+    { value: 0, color: '#491fa3', name: 'wind-icon-0' },
+    { value: 50, color: '#006299', name: 'wind-icon-50' },
+    { value: 60, color: '#007e9e', name: 'wind-icon-60' },
+    { value: 70, color: '#009aaa', name: 'wind-icon-70' },
+    { value: 80, color: '#00bd9e', name: 'wind-icon-80' },
+    { value: 90, color: '#00e55e', name: 'wind-icon-90' },
+    { value: 100, color: '#bcf519', name: 'wind-icon-100' }
+];
+
+
+const rampTornado = [
+    { value: -1, color: '#404B6D', name: 'tornado-icon-default' },
+    { value: 0, color: '#006299', name: 'tornado-icon-0' },
+    { value: 1, color: '#007e9e', name: 'tornado-icon-1' },
+    { value: 2, color: '#009aaa', name: 'tornado-icon-2' },
+    { value: 3, color: '#00bd9e', name: 'tornado-icon-3' },
+    { value: 4, color: '#00e55e', name: 'tornado-icon-4' },
+    { value: 5, color: '#bcf519', name: 'tornado-icon-5' }
+];
+
 //var queryDateTime = new Date(); // Set datetime object to system datetime
 // For testing, set the datetime to 2023-08-12 00:00:00 UTC
 var queryDateTime = new Date(2023, 7, 11, 0, 0, 0);
@@ -14,18 +51,68 @@ initSCal(inputDate, {
     min: new Date(2023, 6, 1),
     max: new Date(2023, 8, 30),
     format: 'mm/dd/yy',
-    persistant: false
+    persistant: false,
+    showDots: true,
+    onChangeFunction: "inputDateChange",
+    onViewChangeFunction: "calendarViewChange",
 });
-inputDate.addEventListener('change', function (e) {
+function inputDateChange(data) {
     // Parse the date from the input
-    var [month, day, year] = e.target.value.split('/');
+    const [month, day, year] = inputDate.value.split('/');
     // convert year from 2 digit to 4 digit
-    year = year.length === 2 ? '20' + year : year;
-    queryDateTime = new Date(year, month - 1, day);
+    const fullYear = year.length === 2 ? '20' + year : year;
+    queryDateTime = new Date(fullYear, month - 1, day);
     updateLayers(false);
-});
+}
 inputDate.value = queryDateTime.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
 
+// Demo function to change the colors of the dots on the calendar
+function calendarViewChange(data) {
+    const monthNode = data.currentMonthInView;
+    const dateNodes = monthNode.querySelectorAll('.s-cal-date-primary.s-cal-date-enabled');
+
+    // Reset the colors
+    document.querySelectorAll('.s-cal-dot').forEach(dot => {
+        dot.style.backgroundColor = '';
+        dot.style.display = '';
+    });
+
+
+    dateNodes.forEach(dateNode => {
+        const dateValue = dateNode.getAttribute('data-date-value');
+        const dateNodeInner = dateNode.querySelector('.s-cal-date-inner');
+        const dateNodeBottom = dateNodeInner.querySelector('.s-cal-date-bottom');
+        const dotOne = dateNodeBottom.querySelector('.s-cal-dot.one');
+        const dotTwo = dateNodeBottom.querySelector('.s-cal-dot.two');
+        const dotThree = dateNodeBottom.querySelector('.s-cal-dot.three');
+
+
+        // Get a random color value from rampHail
+        const randomIndex1 = Math.floor(Math.random() * rampHail.length);
+        const randomIndex2 = Math.floor(Math.random() * rampWind.length);
+        const randomIndex3 = Math.floor(Math.random() * rampTornado.length);
+
+        const randomColor1 = rampHail[randomIndex1].color.substring(1);
+        const randomColor2 = rampWind[randomIndex2].color.substring(1);
+        const randomColor3 = rampTornado[randomIndex3].color.substring(1);
+
+        dotOne.style.backgroundColor = '#' + randomColor1;
+        dotTwo.style.backgroundColor = '#' + randomColor2;
+        dotThree.style.backgroundColor = '#' + randomColor3;
+
+        // Randomly hide dots using a 50% chance
+        if (Math.random() > 0.25) {
+            dotOne.style.display = 'none';
+        }
+        if (Math.random() > 0.25) {
+            dotTwo.style.display = 'none';
+        }
+        if (Math.random() > 0.125) {
+            dotThree.style.display = 'none';
+        }
+
+    });
+}
 
 
 // INSPECTOR STUFF
@@ -94,42 +181,6 @@ setInterval(() => {
 
         return text;
     }
-
-// COLOR RAMPS
-
-const rampHail = [
-    { value: -1, color: '#df9253', name: 'hail-icon-default' },
-    { value: 0, color: '#ffff49', name: 'hail-icon-0' },
-    { value: 0.5, color: '#e5ad1b', name: 'hail-icon-0.5' },
-    { value: 1, color: '#e4751c', name: 'hail-icon-1' },
-    { value: 1.5, color: '#e33e1d', name: 'hail-icon-1.5' },
-    { value: 2, color: '#e11e33', name: 'hail-icon-2' },
-    { value: 2.5, color: '#e01f6a', name: 'hail-icon-2.5' },
-    { value: 3, color: '#df209f', name: 'hail-icon-3' }
-];
-
-
-const rampWind = [
-    { value: -1, color: '#404B6D', name: 'wind-icon-default' },
-    { value: 0, color: '#491fa3', name: 'wind-icon-0' },
-    { value: 50, color: '#006299', name: 'wind-icon-50' },
-    { value: 60, color: '#007e9e', name: 'wind-icon-60' },
-    { value: 70, color: '#009aaa', name: 'wind-icon-70' },
-    { value: 80, color: '#00bd9e', name: 'wind-icon-80' },
-    { value: 90, color: '#00e55e', name: 'wind-icon-90' },
-    { value: 100, color: '#bcf519', name: 'wind-icon-100' }
-];
-
-
-const rampTornado = [
-    { value: -1, color: '#404B6D', name: 'tornado-icon-default' },
-    { value: 0, color: '#006299', name: 'tornado-icon-0' },
-    { value: 1, color: '#007e9e', name: 'tornado-icon-1' },
-    { value: 2, color: '#009aaa', name: 'tornado-icon-2' },
-    { value: 3, color: '#00bd9e', name: 'tornado-icon-3' },
-    { value: 4, color: '#00e55e', name: 'tornado-icon-4' },
-    { value: 5, color: '#bcf519', name: 'tornado-icon-5' }
-];
 
 
 const iconDataURIs = {};
