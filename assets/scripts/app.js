@@ -49,7 +49,7 @@ const inputDate = document.getElementById('inputDate');
 initSCal(inputDate, {
     value: queryDateTime,
     min: new Date(2023, 6, 1),
-    max: new Date(2023, 8, 30),
+    max: new Date(),
     format: 'mm/dd/yy',
     persistant: false,
     showDots: true,
